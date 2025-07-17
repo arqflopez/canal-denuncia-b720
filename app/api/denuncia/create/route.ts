@@ -24,46 +24,33 @@ type Denuncia = {
 
 export async function POST(req: NextRequest) {
   try {
-    const denuncia: Denuncia = await req.json();
+    const body = await req.text();
+    const denuncia: Denuncia = JSON.parse(body);
     const codigo = uuidv4().slice(0, 8);
     const ruta = path.join(process.cwd(), 'data', 'denuncias.json');
 
-    // Leer denuncias existentes
     const datos: Record<string, Denuncia & { estado: string; codigo: string }> = fs.existsSync(ruta)
       ? JSON.parse(fs.readFileSync(ruta, 'utf8'))
       : {};
 
-    const denunciaConCodigo = {
-      ...denuncia,
-      estado: 'Recibido',
-      codigo,
-      comentarios: [],
-    };
-
+    const denunciaConCodigo = { ...denuncia, estado: 'Recibido', codigo, comentarios: [] };
     datos[codigo] = denunciaConCodigo;
 
     fs.mkdirSync(path.dirname(ruta), { recursive: true });
     fs.writeFileSync(ruta, JSON.stringify(datos, null, 2));
 
-    // Enviar correo
-    try {
-      await resend.emails.send({
-        from: 'no-reply@b720.info',
-        to: 'mauroserralvo@b720.com',
-        subject: `⚠️ IMPORTANTE - Nueva denuncia recibida (Código: ${codigo})`,
-        text: generarTextoDenuncia(denunciaConCodigo),
-      });
-    } catch (error) {
-      console.error('Error al enviar el correo:', error);
-    }
+    await resend.emails.send({
+      from: 'no-reply@b720.info',
+      to: 'mauroserralvo@b720.com',
+      subject: `⚠️ IMPORTANTE - Nueva denuncia recibida (Código: ${codigo})`,
+      text: generarTextoDenuncia(denunciaConCodigo),
+    });
 
     return NextResponse.json({ codigo });
-    } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('Error al enviar el correo:', error.message);
-    } else {
-      console.error('Error desconocido al enviar el correo');
-    }
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Error desconocido';
+    console.error('Error en la API:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 

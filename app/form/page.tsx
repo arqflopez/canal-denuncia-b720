@@ -29,29 +29,22 @@ export default function DenunciaPage() {
   };
 
   const enviarFormulario = async () => {
-    setError('');
     try {
       const res = await fetch('/api/denuncia/create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err?.error || 'Error al enviar el formulario');
+        throw new Error(data.error || 'Error al enviar la denuncia');
       }
 
-      const data = await res.json();
       setCodigo(data.codigo);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error('Error:', err);
-        setError(err.message);
-      } else {
-        console.error('Error desconocido');
-        setError('Ha ocurrido un error inesperado.');
-      }
+      console.error('Error al enviar:', err);
+      alert('Hubo un error al enviar la denuncia. Inténtalo de nuevo.');
     }
   };
 
