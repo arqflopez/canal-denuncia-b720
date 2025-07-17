@@ -19,36 +19,49 @@ type Denuncia = {
   email?: string;
   telefono?: string;
   relacion?: string;
+  comentarios?: { texto: string; fecha: string }[];
 };
 
 export async function POST(req: NextRequest) {
-  const body = await req.text();
-  const denuncia: Denuncia = JSON.parse(body);
-  const codigo = uuidv4().slice(0, 8);
-  const ruta = path.join(process.cwd(), 'data', 'denuncias.json');
-
-  const datos: Record<string, Denuncia & { estado: string; codigo: string }> = fs.existsSync(ruta)
-    ? JSON.parse(fs.readFileSync(ruta, 'utf8'))
-    : {};
-
-  const denunciaConCodigo = { ...denuncia, estado: 'Recibido', codigo };
-  datos[codigo] = denunciaConCodigo;
-
-  fs.mkdirSync(path.dirname(ruta), { recursive: true });
-  fs.writeFileSync(ruta, JSON.stringify(datos, null, 2));
-
   try {
-    await resend.emails.send({
-      from: 'no-reply@b720.info',
-      to: 'mauroserralvo@b720.com',
-      subject: `⚠️ IMPORTANTE - Nueva denuncia recibida (Código: ${codigo})`,
-      text: generarTextoDenuncia(denunciaConCodigo),
-    });
-  } catch (error) {
-    console.error('Error al enviar el correo:', error);
-  }
+    const denuncia: Denuncia = await req.json();
+    const codigo = uuidv4().slice(0, 8);
+    const ruta = path.join(process.cwd(), 'data', 'denuncias.json');
 
-  return NextResponse.json({ codigo });
+    // Leer denuncias existentes
+    const datos: Record<string, Denuncia & { estado: string; codigo: string }> = fs.existsSync(ruta)
+      ? JSON.parse(fs.readFileSync(ruta, 'utf8'))
+      : {};
+
+    const denunciaConCodigo = {
+      ...denuncia,
+      estado: 'Recibido',
+      codigo,
+      comentarios: [],
+    };
+
+    datos[codigo] = denunciaConCodigo;
+
+    fs.mkdirSync(path.dirname(ruta), { recursive: true });
+    fs.writeFileSync(ruta, JSON.stringify(datos, null, 2));
+
+    // Enviar correo
+    try {
+      await resend.emails.send({
+        from: 'no-reply@b720.info',
+        to: 'mauroserralvo@b720.com',
+        subject: `⚠️ IMPORTANTE - Nueva denuncia recibida (Código: ${codigo})`,
+        text: generarTextoDenuncia(denunciaConCodigo),
+      });
+    } catch (error) {
+      console.error('Error al enviar el correo:', error);
+    }
+
+    return NextResponse.json({ codigo });
+  } catch (err: any) {
+    console.error('Error interno en /api/denuncia/create:', err);
+    return NextResponse.json({ error: 'Error procesando la solicitud' }, { status: 500 });
+  }
 }
 
 function generarTextoDenuncia(data: Denuncia & { codigo: string }): string {
@@ -73,5 +86,5 @@ Organización: ${data.organizacion || ''}
 Correo: ${data.email || ''}
 Teléfono: ${data.telefono || ''}
 Relación con b720: ${data.relacion || ''}
-  `;
+`;
 }
