@@ -1,44 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { codigo, cambios } = body;
+  const { codigo, cambios } = await req.json();
 
   if (!codigo || !cambios) {
     return NextResponse.json({ error: 'Código o cambios no proporcionados' }, { status: 400 });
   }
 
-  const ruta = path.join(process.cwd(), 'data', 'denuncias.json');
-  if (!fs.existsSync(ruta)) {
-    return NextResponse.json({ error: 'Archivo no encontrado' }, { status: 404 });
-  }
+  const { data, error: getError } = await supabase
+    .from('denuncia')
+    .select('comentarios')
+    .eq('codigo', codigo)
+    .single();
 
-  const datos = JSON.parse(fs.readFileSync(ruta, 'utf8'));
-  if (!datos[codigo]) {
+  if (getError || !data) {
     return NextResponse.json({ error: 'Código inválido' }, { status: 404 });
   }
 
-  const caso = datos[codigo];
+  const nuevosComentarios = [
+    ...(data.comentarios || []),
+    { texto: cambios.nuevoComentario, fecha: new Date().toISOString().split('T')[0] },
+  ];
 
-  // Si es un nuevo comentario
-  if (cambios.nuevoComentario) {
-    const nuevoComentario = {
-      texto: cambios.nuevoComentario,
-      fecha: new Date().toISOString().split('T')[0],
-    };
+  const { error: updateError } = await supabase
+    .from('denuncia')
+    .update({ comentarios: nuevosComentarios })
+    .eq('codigo', codigo);
 
-    // Aseguramos que existe el array
-    caso.comentarios = [...(caso.comentarios || []), nuevoComentario];
+  if (updateError) {
+    return NextResponse.json({ error: 'Error al guardar' }, { status: 500 });
   }
-
-  // Si hay otros cambios, los aplicamos
-  const restoCambios = { ...cambios };
-  delete restoCambios.nuevoComentario;
-  datos[codigo] = { ...caso, ...restoCambios };
-
-  fs.writeFileSync(ruta, JSON.stringify(datos, null, 2));
 
   return NextResponse.json({ ok: true });
 }

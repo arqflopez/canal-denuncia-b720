@@ -1,49 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { Resend } from 'resend';
+import { supabase } from '@/lib/supabase';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Tipo explícito para la denuncia
-type Denuncia = {
-  fecha: string;
-  hecho: string;
-  personasGavina: string;
-  otrasPersonas: string;
-  nombre?: string;
-  apellidos?: string;
-  dni?: string;
-  organizacion?: string;
-  email?: string;
-  telefono?: string;
-  relacion?: string;
-  comentarios?: { texto: string; fecha: string }[];
-};
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.text();
-    const denuncia: Denuncia = JSON.parse(body);
+    const data = JSON.parse(body);
     const codigo = uuidv4().slice(0, 8);
-    const ruta = path.join(process.cwd(), 'data', 'denuncias.json');
 
-    const datos: Record<string, Denuncia & { estado: string; codigo: string }> = fs.existsSync(ruta)
-      ? JSON.parse(fs.readFileSync(ruta, 'utf8'))
-      : {};
+    const denuncia = {
+      ...data,
+      codigo,
+      estado: 'Recibido',
+      comentarios: [],
+    };
 
-    const denunciaConCodigo = { ...denuncia, estado: 'Recibido', codigo, comentarios: [] };
-    datos[codigo] = denunciaConCodigo;
+    const { error } = await supabase.from('denuncia').insert(denuncia);
 
-    fs.mkdirSync(path.dirname(ruta), { recursive: true });
-    fs.writeFileSync(ruta, JSON.stringify(datos, null, 2));
+    if (error) throw new Error(error.message);
 
     await resend.emails.send({
       from: 'no-reply@b720.info',
       to: 'mauroserralvo@b720.com',
       subject: `⚠️ IMPORTANTE - Nueva denuncia recibida (Código: ${codigo})`,
-      text: generarTextoDenuncia(denunciaConCodigo),
+      text: generarTextoDenuncia(denuncia),
     });
 
     return NextResponse.json({ codigo });
@@ -54,7 +37,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-function generarTextoDenuncia(data: Denuncia & { codigo: string }): string {
+function generarTextoDenuncia(data: any): string {
   return `
 DENUNCIA RECIBIDA
 
