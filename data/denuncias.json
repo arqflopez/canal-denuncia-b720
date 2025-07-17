@@ -1,0 +1,103 @@
+{
+  "f75acd58": {
+    "hecho": "ASMSAM",
+    "fecha": "2025-07-10",
+    "personasGavina": "ads",
+    "otrasPersonas": "asd",
+    "nombre": "",
+    "apellidos": "",
+    "dni": "",
+    "organizacion": "",
+    "email": "",
+    "telefono": "",
+    "relacion": "",
+    "estado": "Recibido",
+    "codigo": "f75acd58"
+  },
+  "f6632add": {
+    "hecho": "Problema en el departamento",
+    "fecha": "2025-07-14",
+    "personasGavina": "Marc",
+    "otrasPersonas": "Mauro",
+    "nombre": "",
+    "apellidos": "",
+    "dni": "",
+    "organizacion": "",
+    "email": "",
+    "telefono": "",
+    "relacion": "",
+    "estado": "Recibido",
+    "codigo": "f6632add",
+    "nuevoComentario": "asdasda"
+  },
+  "4ba4d6e9": {
+    "hecho": "asddasas",
+    "fecha": "2025-07-09",
+    "personasGavina": "asd",
+    "otrasPersonas": "asd",
+    "nombre": "",
+    "apellidos": "",
+    "dni": "",
+    "organizacion": "",
+    "email": "",
+    "telefono": "",
+    "relacion": "",
+    "estado": "Recibido",
+    "codigo": "4ba4d6e9",
+    "nuevoComentario": "asdasdad",
+    "comentarios": [
+      {
+        "texto": "Comentario",
+        "fecha": "2025-07-16"
+      },
+      {
+        "texto": "sdfsdfsdfsdf",
+        "fecha": "2025-07-16"
+      }
+    ]
+  },
+  "321b177d": {
+    "hecho": "Mi compañero Marc no trabaja y se dedica a insultar a la gente",
+    "fecha": "2025-07-13",
+    "personas": "Marc",
+    "otrasPersonas": "Mauro",
+    "nombre": "",
+    "apellidos": "",
+    "dni": "",
+    "organizacion": "",
+    "email": "",
+    "telefono": "",
+    "relacion": "",
+    "estado": "Recibido",
+    "codigo": "321b177d",
+    "comentarios": [
+      {
+        "texto": "Hoy tambien me ha insultado",
+        "fecha": "2025-07-16"
+      },
+      {
+        "texto": "Estamos intentando cordinar una terapia grupal",
+        "fecha": "2025-07-16"
+      },
+      {
+        "texto": "Perfecto, gracias, pero que sea rapido",
+        "fecha": "2025-07-16"
+      }
+    ]
+  },
+  "8c5385c5": {
+    "hecho": "asd",
+    "fecha": "2025-07-13",
+    "personas": "ads",
+    "otrasPersonas": "asd",
+    "nombre": "",
+    "apellidos": "",
+    "dni": "",
+    "organizacion": "",
+    "email": "",
+    "telefono": "",
+    "relacion": "",
+    "estado": "Recibido",
+    "codigo": "8c5385c5"
+  }
+}
