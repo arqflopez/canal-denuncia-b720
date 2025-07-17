@@ -58,9 +58,12 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ codigo });
-  } catch (err: any) {
-    console.error('Error interno en /api/denuncia/create:', err);
-    return NextResponse.json({ error: 'Error procesando la solicitud' }, { status: 500 });
+    } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error al enviar el correo:', error.message);
+    } else {
+      console.error('Error desconocido al enviar el correo');
+    }
   }
 }
 

@@ -44,9 +44,14 @@ export default function DenunciaPage() {
 
       const data = await res.json();
       setCodigo(data.codigo);
-    } catch (err: any) {
-      console.error('Error:', err);
-      setError(err.message || 'Ha ocurrido un error inesperado.');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error('Error:', err);
+        setError(err.message);
+      } else {
+        console.error('Error desconocido');
+        setError('Ha ocurrido un error inesperado.');
+      }
     }
   };
 
