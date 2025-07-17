@@ -6,13 +6,28 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Tipo explícito para la denuncia
+type Denuncia = {
+  fecha: string;
+  hecho: string;
+  personasGavina: string;
+  otrasPersonas: string;
+  nombre?: string;
+  apellidos?: string;
+  dni?: string;
+  organizacion?: string;
+  email?: string;
+  telefono?: string;
+  relacion?: string;
+};
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
-  const denuncia = JSON.parse(body);
+  const denuncia: Denuncia = JSON.parse(body);
   const codigo = uuidv4().slice(0, 8);
   const ruta = path.join(process.cwd(), 'data', 'denuncias.json');
 
-  const datos = fs.existsSync(ruta)
+  const datos: Record<string, Denuncia & { estado: string; codigo: string }> = fs.existsSync(ruta)
     ? JSON.parse(fs.readFileSync(ruta, 'utf8'))
     : {};
 
@@ -36,7 +51,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ codigo });
 }
 
-function generarTextoDenuncia(data: any): string {
+function generarTextoDenuncia(data: Denuncia & { codigo: string }): string {
   return `
 DENUNCIA RECIBIDA
 
@@ -51,12 +66,12 @@ Otras personas involucradas: ${data.otrasPersonas}
 
 Información de contacto proporcionada (opcional):
 
-Nombre: ${data.nombre}
-Apellidos: ${data.apellidos}
-DNI: ${data.dni}
-Organización: ${data.organizacion}
-Correo: ${data.email}
-Teléfono: ${data.telefono}
-Relación con b720: ${data.relacion}
+Nombre: ${data.nombre || ''}
+Apellidos: ${data.apellidos || ''}
+DNI: ${data.dni || ''}
+Organización: ${data.organizacion || ''}
+Correo: ${data.email || ''}
+Teléfono: ${data.telefono || ''}
+Relación con b720: ${data.relacion || ''}
   `;
 }

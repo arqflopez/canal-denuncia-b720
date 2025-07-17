@@ -5,20 +5,35 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 
+// Tipos definidos para evitar el uso de `any`
+type Comentario = {
+  texto: string;
+  fecha: string;
+};
+
+type Caso = {
+  estado: string;
+  hecho: string;
+  fecha: string;
+  comentarios: Comentario[];
+};
+
 export default function SeguimientoPage() {
   const { codigo } = useParams();
-  const [caso, setCaso] = useState<any>(null);
+  const [caso, setCaso] = useState<Caso | null>(null);
   const [comentario, setComentario] = useState('');
   const [editando, setEditando] = useState(false);
 
-  const fetchCaso = async () => {
-    const res = await fetch(`/api/denuncia/getByCode?codigo=${codigo}`);
-    const data = await res.json();
-    setCaso(data);
-  };
-
   useEffect(() => {
-    if (codigo) fetchCaso();
+    if (!codigo) return;
+
+    const fetchCaso = async () => {
+      const res = await fetch(`/api/denuncia/getByCode?codigo=${codigo}`);
+      const data = await res.json();
+      setCaso(data);
+    };
+
+    fetchCaso();
   }, [codigo]);
 
   const handleGuardarComentario = async () => {
@@ -33,7 +48,13 @@ export default function SeguimientoPage() {
 
     setComentario('');
     setEditando(false);
-    await fetchCaso(); 
+
+    // Recargar datos del caso actualizado
+    if (codigo) {
+      const res = await fetch(`/api/denuncia/getByCode?codigo=${codigo}`);
+      const data = await res.json();
+      setCaso(data);
+    }
   };
 
   if (!caso) return <p className="p-4 text-neutral-900">Cargando...</p>;
@@ -68,8 +89,8 @@ export default function SeguimientoPage() {
         </div>
       </div>
 
-      {/* Tarjetas de comentarios con historial incluido */}
-      {comentarios.map((coment: any, idx: number) => {
+      {/* Tarjetas de comentarios */}
+      {comentarios.map((coment: Comentario, idx: number) => {
         const esUltima = idx === comentarios.length - 1;
         const comentariosPrevios = comentarios.slice(0, idx + 1); // todos hasta este
 
@@ -86,7 +107,7 @@ export default function SeguimientoPage() {
             </div>
 
             <div className="bg-white rounded p-3 border border-gray-300 space-y-2">
-              {comentariosPrevios.map((c: any, i: number) => (
+              {comentariosPrevios.map((c: Comentario, i: number) => (
                 <div key={i} className="text-sm text-gray-800">
                   <p className="text-gray-500 mb-1"><b>Comentario {i + 1}</b> - {c.fecha}</p>
                   <p className="whitespace-pre-wrap">{c.texto}</p>
@@ -107,7 +128,7 @@ export default function SeguimientoPage() {
         );
       })}
 
-      {/* Formulario de comentario (después de última tarjeta o si no hay comentarios) */}
+      {/* Formulario para nuevo comentario */}
       {mostrarFormulario && (
         <div className="max-w-xl mx-auto mt-4 bg-white border p-4 rounded-xl border-neutral-300 text-neutral-900">
           <textarea
@@ -134,7 +155,7 @@ export default function SeguimientoPage() {
         </div>
       )}
 
-      {/* Si no hay comentarios, muestra botón debajo de tarjeta original */}
+      {/* Botón debajo si no hay comentarios aún */}
       {ultimaTarjeta && !editando && (
         <div className="max-w-xl mx-auto mt-6 text-right">
           <button
