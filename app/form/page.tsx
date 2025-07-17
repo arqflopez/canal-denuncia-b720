@@ -29,27 +29,35 @@ export default function DenunciaPage() {
   };
 
   const enviarFormulario = async () => {
-    try {
-      const res = await fetch('/api/denuncia/create', {
-        method: 'POST',
-        body: JSON.stringify(formData),
-      });
+      setError('');
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Error al enviar la denuncia');
+      if (!formData.hecho.trim() || !formData.fecha.trim()) {
+        setError('Por favor, rellena los campos obligatorios marcados con *.');
+        return;
       }
 
-      setCodigo(data.codigo);
-    } catch (err: unknown) {
-      console.error('Error al enviar:', err);
-      alert('Hubo un error al enviar la denuncia. Inténtalo de nuevo.');
-    }
-  };
+      try {
+        const res = await fetch('/api/denuncia/create', {
+          method: 'POST',
+          body: JSON.stringify(formData),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Error al enviar la denuncia');
+        }
+
+        setCodigo(data.codigo);
+      } catch (err: unknown) {
+        console.error('Error al enviar:', err);
+        setError('Hubo un error al enviar la denuncia. Inténtalo de nuevo.');
+      }
+    };
+
 
   return (
-    <div className="max-w-xl w-full mx-auto px-4 bg-white my-20 select-none">
+    <div className="max-w-xl w-full mx-auto px-4 bg-white my-20 select-none overflow-x-hidden">
       <div className="border-b border-black/20 flex items-center justify-between">
         <Image
           src="/b720-logo-white.svg"
@@ -78,22 +86,25 @@ export default function DenunciaPage() {
           onChange={handleChange}
           required
         />
-        <input
-          name="fecha"
-          type="date"
-          className="w-full p-3 border rounded-xl bg-gray-50 placeholder:text-neutral-400 text-black"
-          onChange={handleChange}
-          required
-        />
+        <div className="flex items-center justify-center">
+          <input
+            name="fecha"
+            type="date"
+            className="w-full p-3 border rounded-xl bg-gray-50 placeholder:text-neutral-400 text-black"
+            onChange={handleChange}
+            required
+          />
+          <p className="text-neutral-900 absolute sm:left-198 left-32">*</p>
+        </div>
         <input
           name="personasGavina"
-          placeholder="Personas de b720 involucradas"
+          placeholder="Personas de b720 involucradas *"
           className="w-full p-3 border rounded-xl bg-gray-50 placeholder:text-neutral-400 text-black"
           onChange={handleChange}
         />
         <input
           name="otrasPersonas"
-          placeholder="Otras personas involucradas"
+          placeholder="Otras personas involucradas *"
           className="w-full p-3 border rounded-xl bg-gray-50 placeholder:text-neutral-400 text-black"
           onChange={handleChange}
         />

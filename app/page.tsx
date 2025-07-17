@@ -8,14 +8,32 @@ export default function HomePage() {
   const [busqueda, setBusqueda] = useState('')
   const router = useRouter()
 
+  const [error, setError] = useState('');
+
   const buscarCaso = async () => {
-    if (!busqueda) return
+    setError(''); 
+    if (!busqueda.trim()) return;
+
     try {
-      if (!busqueda.trim()) return;
-      router.push(`/seguimiento/${busqueda.trim()}`);
+      const res = await fetch(`/api/denuncia/getByCode?codigo=${busqueda.trim()}`);
+
+      if (!res.ok) {
+        setError('No se ha encontrado ninguna denuncia con ese código. Verifica que esté bien escrito.');
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data && data.codigo) {
+        router.push(`/seguimiento/${busqueda.trim()}`);
+      } else {
+        setError('No se ha encontrado ninguna denuncia con ese código.');
+      }
     } catch (error) {
+      console.error('Error al buscar el caso:', error);
+      setError('Ha ocurrido un error al buscar el caso.');
     }
-  }
+  };
 
   return (
     <main className="min-h-screen bg-white px-6 py-20 flex flex-col items-center justify-start space-y-12">
@@ -61,6 +79,11 @@ export default function HomePage() {
               Buscar
             </button>
           </div>
+          {error && (
+              <p className="mt-4 text-red-600 bg-red-100 border border-red-300 rounded-xl p-3">
+                {error}
+              </p>
+            )}
         </div>
       </div>
     </main>
