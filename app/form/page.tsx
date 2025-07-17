@@ -50,7 +50,7 @@ export default function DenunciaPage() {
       </div>
 
       <h1 className="text-2xl font-bold  text-gray-800 pt-12">Formulario de denuncia anónima</h1>
-      <p className="text-sm mb-12 text-gray-500 pt-3">Este formulario es completamente anónimo, no recopilamos datos aparte de los que facilitas.</p>
+      <p className="text-sm mb-12 text-gray-500 pt-3">Este formulario es completamente anónimo, no recopilamos datos aparte de los que facilites. Se enviará directamente al departamento de RRHH y recibirás una respuesta lo antes posible.</p>
 
       <div className="space-y-5">
         <textarea
@@ -58,31 +58,39 @@ export default function DenunciaPage() {
           placeholder="Hecho denunciado *"
           className="w-full p-3 border rounded-xl bg-gray-50 placeholder:text-neutral-400 text-black"
           onChange={handleChange}
+          required
         />
+
         <input
           name="fecha"
           type="date"
           className="w-full p-3 border rounded-xl bg-gray-50 placeholder:text-neutral-400 text-black"
           onChange={handleChange}
+          required
         />
+
         <input
           name="personas"
           placeholder="Personas de b720 involucradas"
           className="w-full p-3 border rounded-xl bg-gray-50 placeholder:text-neutral-400 text-black"
           onChange={handleChange}
+          required
         />
+
         <input
           name="otrasPersonas"
           placeholder="Otras personas involucradas"
           className="w-full p-3 border rounded-xl bg-gray-50 placeholder:text-neutral-400 text-black"
           onChange={handleChange}
+          required
         />
+
 
         <p className="text-sm text-gray-600">
           Adjuntar documentación enviando un correo a:{" "}
           <b>backup@b720.com</b>
         </p>
-        <p className="text-sm text-red-500">
+        <p className="text-xs text-red-500">
           *Deja tus datos <span className="font-bold">SOLO</span> si quieres ser contactado. Es completamente opcional. De lo contrario te facilitaremos un número de seguimiento anónimo para que puedas ver el estado de tu denuncia.
         </p>
 
@@ -96,7 +104,7 @@ export default function DenunciaPage() {
         </div>
 
         <select name="relacion" className="w-full p-3 border rounded-xl bg-gray-50 placeholder:text-neutral-400 text-black" onChange={handleChange}>
-          <option className="placeholder:text-neutral-400 text-black" value="">Relación con B720</option>
+          <option className="placeholder:text-neutral-400 text-black" value="">Relación con b720</option>
           <option className="placeholder:text-neutral-400 text-black">Empleado</option>
           <option className="placeholder:text-neutral-400 text-black">Empleado en practicas</option>
           <option className="placeholder:text-neutral-400 text-black">Empresa o entidad colaboradora</option>
