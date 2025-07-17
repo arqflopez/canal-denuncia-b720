@@ -5,13 +5,31 @@ import { supabase } from '@/lib/supabase';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Tipo explícito de la denuncia
+type Denuncia = {
+  fecha: string;
+  hecho: string;
+  personasGavina: string;
+  otrasPersonas: string;
+  nombre?: string;
+  apellidos?: string;
+  dni?: string;
+  organizacion?: string;
+  email?: string;
+  telefono?: string;
+  relacion?: string;
+  codigo?: string;
+  estado?: string;
+  comentarios?: { texto: string; fecha: string }[];
+};
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.text();
-    const data = JSON.parse(body);
+    const data: Denuncia = JSON.parse(body);
     const codigo = uuidv4().slice(0, 8);
 
-    const denuncia = {
+    const denuncia: Denuncia = {
       ...data,
       codigo,
       estado: 'Recibido',
@@ -37,7 +55,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-function generarTextoDenuncia(data: any): string {
+function generarTextoDenuncia(data: Denuncia): string {
   return `
 DENUNCIA RECIBIDA
 
