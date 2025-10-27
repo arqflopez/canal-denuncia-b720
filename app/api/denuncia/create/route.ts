@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     await resend.emails.send({
       from: 'no-reply@b720.info',
-      to: 'mauroserralvo@b720.com',
+      to: 'informatica@b720.com',
       subject: `⚠️ IMPORTANTE - Nueva denuncia recibida (Código: ${codigo})`,
       text: generarTextoDenuncia(denuncia),
     });
