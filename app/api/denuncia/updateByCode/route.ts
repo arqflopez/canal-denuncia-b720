@@ -1,36 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
-  const { codigo, cambios } = await req.json();
+  try {
+    const { codigo, cambios } = await req.json();
 
-  if (!codigo || !cambios) {
-    return NextResponse.json({ error: 'Código o cambios no proporcionados' }, { status: 400 });
+    if (!codigo || !cambios || !cambios.nuevoComentario) {
+      return NextResponse.json({ error: 'Código o cambios no proporcionados' }, { status: 400 });
+    }
+
+    const denuncia = await prisma.denuncia.findUnique({ where: { codigo } });
+    if (!denuncia) return NextResponse.json({ error: 'Código inválido' }, { status: 404 });
+
+    const comentariosPrevios: { texto: string; fecha: string }[] =
+      Array.isArray(denuncia.comentarios)
+        ? (denuncia.comentarios as { texto: string; fecha: string }[])
+        : [];
+
+    const nuevosComentarios = [
+      ...comentariosPrevios,
+      { texto: cambios.nuevoComentario, fecha: new Date().toISOString().split('T')[0] },
+    ];
+
+    await prisma.denuncia.update({
+      where: { codigo },
+      data: { comentarios: nuevosComentarios },
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Error desconocido';
+    console.error('Error en la API:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
-
-  const { data, error: getError } = await supabase
-    .from('denuncia')
-    .select('comentarios')
-    .eq('codigo', codigo)
-    .single();
-
-  if (getError || !data) {
-    return NextResponse.json({ error: 'Código inválido' }, { status: 404 });
-  }
-
-  const nuevosComentarios = [
-    ...(data.comentarios || []),
-    { texto: cambios.nuevoComentario, fecha: new Date().toISOString().split('T')[0] },
-  ];
-
-  const { error: updateError } = await supabase
-    .from('denuncia')
-    .update({ comentarios: nuevosComentarios })
-    .eq('codigo', codigo);
-
-  if (updateError) {
-    return NextResponse.json({ error: 'Error al guardar' }, { status: 500 });
-  }
-
-  return NextResponse.json({ ok: true });
 }

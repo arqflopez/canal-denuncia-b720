@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Denuncia {
+  codigo         String   @id
+  hecho          String?
+  fecha          String?
+  personasGavina String?
+  otrasPersonas  String?
+  nombre         String?
+  apellidos      String?
+  dni            String?
+  organizacion   String?
+  email          String?
+  telefono       String?
+  relacion       String?
+  estado         String?  @default("Recibido")
+  comentarios    Json?    @default("[]")
+  inserted_at    DateTime @default(now())
+}

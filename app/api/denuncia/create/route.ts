@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { Resend } from 'resend';
-import { supabase } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Tipo explícito de la denuncia
 type Denuncia = {
   fecha: string;
   hecho: string;
@@ -29,17 +28,22 @@ export async function POST(req: NextRequest) {
     const data: Denuncia = JSON.parse(body);
     const codigo = uuidv4().slice(0, 8);
 
-    const denuncia: Denuncia = {
+    type DenunciaCreate = Omit<Denuncia, 'codigo' | 'estado' | 'comentarios'> & {
+      codigo: string;
+      estado: string;
+      comentarios: { texto: string; fecha: string }[];
+    };
+
+    const denuncia: DenunciaCreate = {
       ...data,
       codigo,
       estado: 'Recibido',
       comentarios: [],
     };
 
-    const { error } = await supabase.from('denuncia').insert(denuncia);
+    await prisma.denuncia.create({ data: denuncia });
 
-    if (error) throw new Error(error.message);
-
+    // Enviar email
     await resend.emails.send({
       from: 'no-reply@b720.info',
       to: 'informatica@b720.com',
