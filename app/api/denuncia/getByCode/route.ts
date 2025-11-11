@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -7,13 +7,9 @@ export async function GET(req: NextRequest) {
 
   if (!codigo) return NextResponse.json({ error: 'Código no proporcionado' }, { status: 400 });
 
-  const { data, error } = await supabase
-    .from('denuncia')
-    .select('*')
-    .eq('codigo', codigo)
-    .single();
+  const denuncia = await prisma.denuncia.findUnique({ where: { codigo } });
 
-  if (error || !data) return NextResponse.json({ error: 'Código no encontrado' }, { status: 404 });
+  if (!denuncia) return NextResponse.json({ error: 'Código no encontrado' }, { status: 404 });
 
-  return NextResponse.json(data);
+  return NextResponse.json(denuncia);
 }
